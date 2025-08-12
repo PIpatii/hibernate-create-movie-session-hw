@@ -16,11 +16,12 @@ public class MovieSession {
     private LocalDateTime showTime;
 
     @ManyToOne
-    @JoinColumn(name = "movie_id")
-    private Movie movie;
-    @ManyToOne
     @JoinColumn(name = "cinema_hall_id")
     private CinemaHall cinemaHall;
+
+    @ManyToOne
+    @JoinColumn(name = "movie_id")
+    private Movie movie;
 
     public Long getId() {
         return id;
@@ -52,5 +53,15 @@ public class MovieSession {
 
     public void setCinemaHall(CinemaHall cinemaHall) {
         this.cinemaHall = cinemaHall;
+    }
+
+    @Override
+    public String toString() {
+        return "MovieSession{"
+                + "id=" + id
+                + ", showTime=" + showTime
+                + ", cinemaHall=" + cinemaHall
+                + ", movie=" + movie
+                + '}';
     }
 }

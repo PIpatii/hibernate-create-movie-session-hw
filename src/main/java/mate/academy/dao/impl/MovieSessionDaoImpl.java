@@ -1,7 +1,9 @@
 package mate.academy.dao.impl;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import mate.academy.dao.MovieSessionDao;
 import mate.academy.exception.DataProcessingException;
 import mate.academy.lib.Dao;
@@ -35,11 +37,11 @@ public class MovieSessionDaoImpl implements MovieSessionDao {
     }
 
     @Override
-    public MovieSession get(Long id) {
+    public Optional<MovieSession> get(Long id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(MovieSession.class, id);
+            return Optional.ofNullable(session.get(MovieSession.class, id));
         } catch (Exception e) {
-            throw new DataProcessingException("Can't get a cinema hall by id: " + id, e);
+            throw new DataProcessingException("Can't get a movie session by id: " + id, e);
         }
     }
 
@@ -47,12 +49,19 @@ public class MovieSessionDaoImpl implements MovieSessionDao {
     public List<MovieSession> findAvailableSessions(Long movieId, LocalDate date) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
-                     "from MovieSession m "
-                             + "left join fetch m.movie "
-                             + "where m.id = :movieId and m.showTime = :date",
-                    MovieSession.class).list();
+                    "from MovieSession m "
+                            + "left join fetch m.movie "
+                            + "where m.movie.id = :movieId "
+                            + "and m.showTime BETWEEN :dateStart AND :dateEnd",
+                            MovieSession.class
+                    )
+                    .setParameter("movieId", movieId)
+                    .setParameter("dateStart", date.atStartOfDay())
+                    .setParameter("dateEnd", date.atTime(LocalTime.MAX))
+                    .list();
+
         } catch (Exception e) {
-            throw new DataProcessingException("Can't get all cinema halls", e);
+            throw new DataProcessingException("Can't get all movie session", e);
         }
     }
 }
